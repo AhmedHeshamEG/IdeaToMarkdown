@@ -1,0 +1,6 @@
+# Core dependencies will be added here
+python-dotenv
+openai
+pyaudio # For microphone access. Can sometimes be tricky to install on Windows; ensure you have C++ build tools or consider alternatives if issues arise.
+# Add other dependencies as identified, e.g., for specific audio playback if not handled by OpenAI SDK directly or for testing
+pytest

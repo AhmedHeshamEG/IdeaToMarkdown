@@ -1,0 +1,5 @@
+flake8
+pytest
+pytest-cov
+# black # Uncomment if you decide to use Black for formatting
+# mypy  # Uncomment if you decide to use MyPy for type checking

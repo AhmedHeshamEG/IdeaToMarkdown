@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.env
+*.venv
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Data files (if any user-specific data is stored locally and shouldn't be committed)
+*.local_config.ini
+notes_data/ # Example if notes are stored in a subfolder you don't want to track templates for
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# User-generated notes
+my_markdown_notes/
+
+# Temporary files
+temp_*.wav
