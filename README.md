@@ -9,6 +9,10 @@
   [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-green)](https://platform.openai.com/)
   [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](docs/01_getting_started.md)
   [![Version](https://img.shields.io/badge/version-0.1.0-informational)](https://github.com/AhmedHeshamEG/IdeaToMarkdown/releases)
+  
+  [![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/ahmedheshameg)
+  [![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-EA4AAA?style=flat&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/AhmedHeshamEG)
+  [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=flat&logo=patreon&logoColor=white)](https://patreon.com/ahmedheshameg)
 </div>
 
 **Capture your fleeting thoughts and structure your ideas effortlessly with a voice-first AI agent.**
