@@ -1,6 +1,6 @@
 <div align="center">
   <img src="docs/assets/icon.png" alt="Idea to Markdown Logo" width="180" height="180">
-  <h1>Idea to Markdown Agent</h1>
+  <h1>Idea to Markdown AI Agent</h1>
   
   [![Python Application CI](https://github.com/AhmedHeshamEG/IdeaToMarkdown/actions/workflows/python-app.yml/badge.svg)](https://github.com/AhmedHeshamEG/IdeaToMarkdown/actions/workflows/python-app.yml)
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
