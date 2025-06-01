@@ -5,8 +5,6 @@ import shutil  # For cleaning up test directories
 from idea_to_markdown.note_manager import NoteManager
 from idea_to_markdown.config import AppConfig
 
-# Fixture to create a temporary notes directory for testing
-
 
 @pytest.fixture
 def temp_notes_dir(tmp_path: Path) -> Path:
@@ -19,17 +17,13 @@ def temp_notes_dir(tmp_path: Path) -> Path:
 def test_config(temp_notes_dir: Path) -> AppConfig:
     config = AppConfig()
     # Override the notes_dir to use the temporary one
-    original_base_dir = config.base_dir
     config.notes_dir = temp_notes_dir
-    # Adjust base_dir if other paths depend on it relative to notes_dir, though not strictly needed for these tests
-    # config.base_dir = temp_notes_dir.parent
     return config
 
 
 @pytest.fixture
 def note_manager(test_config: AppConfig) -> NoteManager:
     # Ensure the directory from config is used
-    # Make sure the test_notes_dir is created by config
     test_config.ensure_directories()
     return NoteManager(test_config)
 
@@ -85,15 +79,39 @@ class TestNoteManager:
         note_manager.add_note_to_project("", "This note should not be saved")
         captured = capsys.readouterr()
         assert "Error: Project name cannot be empty." in captured.out
-        # Assert that no new project files were created unexpectedly (tricky without knowing all files)
-        # For simplicity, check if notes_dir is empty or only contains scratchpad if it was made
-        # This depends on the test execution order or better isolation.
-        # For now, the error message check is the primary assertion.
 
-    # Clean up the temporary directory after all tests in this class if needed,
-    # though pytest's tmp_path fixture handles this automatically.
-    # def teardown_class(cls):
-    #     # Example: if test_config.notes_dir was manually created and not part of tmp_path
-    #     # if Path("path_to_temp_notes_during_test").exists():
-    #     #     shutil.rmtree("path_to_temp_notes_during_test")
-    #     pass
+    def test_timestamp_format(self, note_manager: NoteManager):
+        """Test the timestamp format used in notes"""
+        timestamp = note_manager._get_timestamp_prefix()
+        # Check that the timestamp matches the expected format (YYYY-MM-DD HH:MM:SS)
+        assert len(timestamp) == 19  # Length of "YYYY-MM-DD HH:MM:SS"
+        assert timestamp[4] == "-" and timestamp[7] == "-"  # Date format
+        assert timestamp[10] == " "  # Space between date and time
+        assert timestamp[13] == ":" and timestamp[16] == ":"  # Time format
+
+    def test_multiple_notes_formatting(self, note_manager: NoteManager, test_config: AppConfig):
+        """Test the formatting of multiple notes in a single project file"""
+        project_name = "FormattingTest"
+
+        # Add several notes
+        note_manager.add_note_to_project(project_name, "First note")
+        note_manager.add_note_to_project(
+            project_name, "Second note\nWith multiple lines")
+        note_manager.add_note_to_project(
+            project_name, "- Third note\n- With bullets")
+
+        project_file = test_config.notes_dir / f"{project_name}.md"
+        with open(project_file, "r", encoding="utf-8") as f:
+            content = f.read()
+
+            # Check that the project header appears once
+            assert content.count(f"# Project: {project_name}") == 1
+
+            # Check that each note has its own entry header
+            assert content.count("## Entry:") == 3
+
+            # Check multiline content is preserved
+            assert "Second note\nWith multiple lines" in content
+
+            # Check bullet formatting is preserved
+            assert "- Third note\n- With bullets" in content

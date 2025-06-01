@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../icon.png" alt="Idea to Markdown Logo" width="80" height="80">
+</p>
+
 # Usage Guide - Idea to Markdown Agent
 
 This guide explains how to interact with the Idea to Markdown Agent and understand its core functionalities.

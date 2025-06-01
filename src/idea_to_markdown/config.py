@@ -8,24 +8,33 @@ class AppConfig:
     Manages application configuration, including paths and API keys.
     """
 
-    def __init__(self):
-        load_dotenv()  # Load environment variables from .env file
+    def __init__(self, custom_base_dir=None):
+        # Load environment variables from .env file
+        load_dotenv()
 
-        self.base_dir = Path(__file__).resolve(
-        ).parent.parent.parent  # Root of the project
-        self.notes_dir_name = "my_markdown_notes"
+        # Root of the project - can be overridden for testing
+        self.base_dir = custom_base_dir or Path(
+            __file__).resolve().parent.parent.parent
+
+        # Notes directory - relative to base_dir
+        self.notes_dir_name = "markdown_notes"
         self.notes_dir = self.base_dir / self.notes_dir_name
+
+        # File naming
         self.scratchpad_file_name = "_GLOBAL_SCRATCHPAD.md"
-        # Can be overridden by user preference later
         self.default_project_name = "General_Ideas"
 
-        # API Keys - to be loaded from environment variables
+        # API Keys from environment variables
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        # Add other API keys as needed (e.g., for specific STT/TTS services)
+        if not self.openai_api_key:
+            print(
+                "WARNING: No OpenAI API key found in environment variables or .env file.")
+            print("Voice features will not work without a valid API key.")
 
-        # Voice interaction settings
-        self.wake_word = "Hey Agent"  # Example, can be made configurable
-        self.voice_recording_duration = 5  # Seconds, for non-VAD recording
+        # Voice interaction settings from environment or defaults
+        self.wake_word = os.getenv("WAKE_WORD", "Hey Agent")
+        self.voice_recording_duration = int(
+            os.getenv("VOICE_RECORDING_DURATION", "5"))
 
     def ensure_directories(self):
         """Ensures that the base notes directory exists."""

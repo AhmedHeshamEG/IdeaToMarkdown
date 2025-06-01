@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../icon.png" alt="Idea to Markdown Logo" width="80" height="80">
+</p>
+
 # Getting Started with Idea to Markdown Agent
 
 Welcome to the Idea to Markdown Agent! This guide will help you get the agent up and running on your local machine.
@@ -15,11 +19,9 @@ Welcome to the Idea to Markdown Agent! This guide will help you get the agent up
 1.  **Clone the Repository:**
 
     ```bash
-    git clone https://github.com/OWNER/REPOSITORY.git
-    cd REPOSITORY
+    git clone https://github.com/AhmedHeshamEG/IdeaToMarkdown.git
+    cd IdeaToMarkdown
     ```
-
-    _(Replace `OWNER/REPOSITORY` with the actual path to the repository, e.g., `YourGitHubUsername/idea-to-markdown` if you've forked it, or the main project's URL.)_
 
 2.  **Create a Virtual Environment (Recommended):**
 
@@ -39,12 +41,21 @@ Welcome to the Idea to Markdown Agent! This guide will help you get the agent up
     ```
 
 4.  **Set Up Environment Variables:**
-    Create a file named `.env` in the root directory of the project (`idea-to-markdown/.env`).
+    Create a file named `.env` in the root directory of the project.
     Add your OpenAI API key to this file:
+
     ```env
     OPENAI_API_KEY="your_openai_api_key_here"
     ```
+
     Replace `"your_openai_api_key_here"` with your actual OpenAI API key.
+
+    For convenience, you can copy the provided `.env.example` file:
+
+    ```bash
+    cp .env.example .env
+    # Then edit .env with your actual API key
+    ```
 
 ## Running the Agent
 
@@ -54,7 +65,7 @@ Once you have completed the installation and setup, you can run the agent using 
 python main.py
 ```
 
-The agent will initialize, and if your OpenAI API key is correctly set up and microphone access is working, it will guide you through selecting a project or using the scratchpad via voice (simulated by console input in the current version if full voice isn't implemented).
+The agent will initialize, and if your OpenAI API key is correctly set up and microphone access is working, it will guide you through selecting a project or using the scratchpad via voice.
 
 ## First Interaction
 
@@ -66,7 +77,7 @@ The agent will initialize, and if your OpenAI API key is correctly set up and mi
 - Follow the agent's voice prompts to capture your ideas.
 - Say `"exit agent"` or `"quit agent"` to end the session.
 
-Your notes will be saved in the `my_markdown_notes` directory within the project folder.
+Your notes will be saved in the `markdown_notes` directory within the project folder.
 
 ## Troubleshooting
 

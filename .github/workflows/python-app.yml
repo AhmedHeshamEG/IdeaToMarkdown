@@ -43,6 +43,7 @@ jobs:
 
     - name: Test with pytest
       env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_DUMMY }} # Use a dummy key for CI tests
+        # Use a dummy key for CI tests - no actual OpenAI calls should be made during tests
+        OPENAI_API_KEY: "sk-dummy-key-for-testing-only"
       run: |
-        pytest
+        pytest -xvs

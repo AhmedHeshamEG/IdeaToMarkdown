@@ -1,23 +1,22 @@
 import openai
 import pyaudio
 import wave
-import time  # For simulating delays or simple timing
+import time
+import os
+import tempfile
+from pathlib import Path
 
 # Configuration for audio recording
-FORMAT = pyaudio.paInt16  # Audio format
-CHANNELS = 1              # Mono audio
-RATE = 16000              # Sample rate (Hz), common for voice
-CHUNK = 1024              # Buffer size (frames per buffer)
-# TEMP_WAVE_FILENAME = "temp_user_audio.wav" # If saving audio to file before sending
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 16000
+CHUNK = 1024
 
 
 class SpeechInterface:
     """
     Handles real-time voice interaction using OpenAI's services.
-    NOTE: The current implementation simulates a turn-by-turn conversational flow
-    by recording a full utterance, then processing STT, LLM, and TTS sequentially.
-    True real-time streaming (like OpenAI's "Advanced Voice Mode") would require
-    more complex asynchronous handling of audio chunks for lower latency.
+    Provides speech-to-text and text-to-speech functionality for the agent.
     """
 
     def __init__(self, config):
@@ -36,49 +35,42 @@ class SpeechInterface:
 
         self.audio_interface = pyaudio.PyAudio()
 
+        # Create project-specific temp directory instead of global one
+        self.temp_dir = Path(tempfile.gettempdir()) / "idea_to_markdown_audio"
+        self.temp_dir.mkdir(exist_ok=True)
+        print(f"Using temporary audio directory: {self.temp_dir}")
+
     def _record_audio_chunk(self, stream):
-        """
-        Helper to record a chunk of audio for a single utterance.
-        Future Enhancement: Implement Voice Activity Detection (VAD) for smarter recording.
-        """
-        # This is a simplified recording for one utterance.
-        # Real-time streaming would involve continuously capturing and sending chunks.
-        print(
-            "🔴 Recording... (Speak now, press Ctrl+C in console to stop - basic simulation)")
+        """Record audio from the user until they stop speaking or timeout occurs."""
+        print("🔴 Recording... (Speak now, press Ctrl+C in console to stop)")
         frames = []
         try:
-            # Record for a configurable duration or implement VAD
-            # TODO: Implement VAD for smarter recording
+            # Record for a configurable duration
             for _ in range(0, int(RATE / CHUNK * self.config.voice_recording_duration)):
                 data = stream.read(CHUNK, exception_on_overflow=False)
                 frames.append(data)
-                # Basic VAD could be implemented here to stop on silence
+                # Future enhancement: Implement VAD here
         except KeyboardInterrupt:
             print("Recording stopped by user.")
 
         return b''.join(frames)
 
     def play_audio_stream(self, audio_stream_data):
-        """
-        Plays audio data received from an audio stream (e.g., OpenAI TTS).
-        This is a simplified playback using a temporary file.
-        Future Enhancement: Stream audio bytes directly to PyAudio for lower latency.
-        """
+        """Play audio data using PyAudio."""
         if not audio_stream_data:
             print("No audio data to play.")
             return
 
-        # For simplicity, save to a temporary file and play.
-        temp_playback_file = "temp_agent_response.wav"
+        temp_playback_file = self.temp_dir / "temp_agent_response.wav"
         try:
-            with wave.open(temp_playback_file, 'wb') as wf:
+            with wave.open(str(temp_playback_file), 'wb') as wf:
                 wf.setnchannels(CHANNELS)
                 wf.setsampwidth(self.audio_interface.get_sample_size(FORMAT))
                 wf.setframerate(RATE)
                 wf.writeframes(audio_stream_data)
 
-            print(f"📢 Playing agent response...")
-            wf = wave.open(temp_playback_file, 'rb')
+            print("📢 Playing agent response...")
+            wf = wave.open(str(temp_playback_file), 'rb')
             stream = self.audio_interface.open(format=self.audio_interface.get_format_from_width(wf.getsampwidth()),
                                                channels=wf.getnchannels(),
                                                rate=wf.getframerate(),
@@ -94,34 +86,29 @@ class SpeechInterface:
         except Exception as e:
             print(f"Error playing audio: {e}")
         finally:
-            # Consider removing the temp file:
-            # import os
-            # if os.path.exists(temp_playback_file):
-            #     os.remove(temp_playback_file)
-            pass
+            # Clean up temp file
+            try:
+                temp_playback_file.unlink(missing_ok=True)
+            except Exception:
+                pass
 
     def conduct_realtime_conversation_turn(self, prompt_message: str = "Listening...") -> str | None:
         """
-        Conducts a single turn of real-time voice conversation.
-        1. Listens to user's voice.
-        2. Sends to OpenAI (simulating Realtime API for speech-to-speech).
-        3. Receives OpenAI's voice response.
-        4. Plays OpenAI's voice response.
-        5. Returns the transcribed text of the user's input for the agent logic.
-
-        NOTE: This is a conceptual outline. True Realtime API integration
-        would involve more complex streaming logic for both input and output audio.
-        OpenAI's specific Realtime API for speech-to-speech might have different SDK usage.
-        Refer to the latest OpenAI documentation for their "Realtime Conversations" API.
+        Conducts a single turn of voice conversation:
+        1. Records user's speech
+        2. Transcribes to text using OpenAI
+        3. Gets AI response via OpenAI
+        4. Converts response to speech and plays it
+        5. Returns transcribed user input
         """
         if not self.client:
             print("OpenAI client not available. Cannot conduct voice turn.")
-            # Fallback to text input for basic testing if desired
+            # Fallback to text input for basic testing
             return input(f"🎤 (Fallback Text Input) {prompt_message}: ")
 
         print(prompt_message)
 
-        # 1. Record User Audio (Simplified)
+        # 1. Record User Audio
         p_stream = self.audio_interface.open(format=FORMAT, channels=CHANNELS,
                                              rate=RATE, input=True,
                                              frames_per_buffer=CHUNK)
@@ -134,18 +121,9 @@ class SpeechInterface:
             return None
 
         try:
-            # 2. Send to OpenAI & Get Response (Conceptual - API details may vary)
-            # This part heavily depends on the specifics of OpenAI's Realtime API for speech-to-speech.
-            # The following is a *conceptual representation* of what might happen.
-            # You'd typically use a streaming STT, then send text to LLM, then use streaming TTS.
-            # Or, a unified Realtime API might handle this more directly.
-
-            # Step A: Transcribe user's audio (STT)
-            # For this example, we'll save to a temporary file to use with `audio.transcriptions.create`
-            # A true realtime API would stream this.
-            # Future Enhancement: Use OpenAI's streaming STT if available via SDK, or another streaming STT service.
-            temp_stt_input_file = "temp_stt_input.wav"
-            with wave.open(temp_stt_input_file, 'wb') as wf:
+            # 2. Transcribe user's audio (STT)
+            temp_stt_input_file = self.temp_dir / "temp_stt_input.wav"
+            with wave.open(str(temp_stt_input_file), 'wb') as wf:
                 wf.setnchannels(CHANNELS)
                 wf.setsampwidth(self.audio_interface.get_sample_size(FORMAT))
                 wf.setframerate(RATE)
@@ -153,7 +131,7 @@ class SpeechInterface:
 
             with open(temp_stt_input_file, "rb") as audio_file_for_stt:
                 transcription_response = self.client.audio.transcriptions.create(
-                    model="whisper-1",  # Or other suitable model
+                    model="whisper-1",
                     file=audio_file_for_stt
                 )
             user_transcribed_text = transcription_response.text
@@ -164,11 +142,9 @@ class SpeechInterface:
                     "Sorry, I didn't catch that."))
                 return None
 
-            # Step B: Get LLM response based on transcription
-            # This is where your agent's context/logic would feed into the LLM prompt
-            # For now, using a simplified chat completion
+            # 3. Get LLM response based on transcription
             chat_completion_response = self.client.chat.completions.create(
-                model="gpt-4o",  # Or your preferred model
+                model="gpt-4o",
                 messages=[
                     {"role": "system",
                         "content": "You are a helpful voice assistant for capturing ideas."},
@@ -178,33 +154,36 @@ class SpeechInterface:
             agent_text_response = chat_completion_response.choices[0].message.content
             print(f"🧠 Agent thinks: {agent_text_response}")
 
-            # Step C: Synthesize agent's text response to speech (TTS)
-            # Future Enhancement: Use OpenAI's streaming TTS if available via SDK for faster response.
+            # 4. Synthesize agent's text response to speech (TTS)
             tts_response = self.client.audio.speech.create(
-                model="tts-1",  # Or other suitable model
-                voice="alloy",  # Or your preferred voice
+                model="tts-1",
+                voice="alloy",
                 input=agent_text_response,
-                response_format="wav"  # Or other format like mp3, opus
+                response_format="wav"
             )
-            # tts_response.content contains the audio data bytes
-            # For streaming: tts_response.stream_to_file("output.wav") or iterate chunks
             agent_audio_data = tts_response.content
 
-            # 3. Play Agent's Voice Response
+            # 5. Play Agent's Voice Response
             self.play_audio_stream(agent_audio_data)
 
-            # 4. Return user's transcribed text for agent logic
+            # Cleanup
+            try:
+                temp_stt_input_file.unlink(missing_ok=True)
+            except Exception:
+                pass
+
             return user_transcribed_text
 
         except openai.APIError as e:
             print(f"OpenAI API Error: {e}")
-            # Potentially play a generic error message if TTS is available
-            # self.play_audio_stream(self._generate_error_speech("I encountered an API error."))
+            self.play_audio_stream(self._generate_error_speech(
+                "I encountered an API error."))
         except Exception as e:
             print(f"An unexpected error occurred in voice interaction: {e}")
-            # self.play_audio_stream(self._generate_error_speech("An unexpected error occurred."))
+            self.play_audio_stream(self._generate_error_speech(
+                "An unexpected error occurred."))
 
-        return None  # In case of errors
+        return None
 
     def _generate_error_speech(self, error_text: str) -> bytes | None:
         """Generates speech for a given error text if client is available."""
