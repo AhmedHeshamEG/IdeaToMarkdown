@@ -25,6 +25,7 @@ class AppConfig:
 
         # Voice interaction settings
         self.wake_word = "Hey Agent"  # Example, can be made configurable
+        self.voice_recording_duration = 5  # Seconds, for non-VAD recording
 
     def ensure_directories(self):
         """Ensures that the base notes directory exists."""

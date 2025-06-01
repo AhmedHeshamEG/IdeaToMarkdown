@@ -47,9 +47,9 @@ class SpeechInterface:
             "🔴 Recording... (Speak now, press Ctrl+C in console to stop - basic simulation)")
         frames = []
         try:
-            # Record for up to 5 seconds for this example
-            # TODO: Make duration configurable or implement VAD
-            for _ in range(0, int(RATE / CHUNK * 5)):
+            # Record for a configurable duration or implement VAD
+            # TODO: Implement VAD for smarter recording
+            for _ in range(0, int(RATE / CHUNK * self.config.voice_recording_duration)):
                 data = stream.read(CHUNK, exception_on_overflow=False)
                 frames.append(data)
                 # Basic VAD could be implemented here to stop on silence
